@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <title>モグラ叩き</title>
+    <link rel="stylesheet" type="text/css" href="css/mogura.css">
+
+    <script>
+    "use strict";
+
+    window.onload = main;
+
+    let tiles = [];
+    let field;
+    let score = 0;
+    let label;
+    let moguraIndex = -1;
+    let timer;
+
+    let intervalTime = 1000;
+    let speedLevel = 0;
+
+    const hitSound = new Audio("sound/button51.mp3");
+
+    function main() {
+        field = document.getElementById("field");
+        label = document.getElementById("label");
+
+
+        updateScoreDisplay();
+
+
+        label.innerText = score + "ポイント";
+
+        for (let i = 0; i < 4; i++) {
+            let row = document.createElement("div");
+            row.className = "row";
+            for (let j = 0; j < 8; j++) {
+                let tile = document.createElement("div");
+                tile.className = "tile hole";
+                tile.onclick = tileClick;
+
+                tiles.push(tile);
+                row.appendChild(tile);
+            }
+
+            field.appendChild(row);
+        }
+
+         showMogura();
+         setInterval(showMogura, 1000);
+       
+    
+    }
+
+    function showMogura() {
+        if (moguraIndex != -1) {
+            tiles[moguraIndex].className = "tile hole";
+        }
+        moguraIndex = Math.floor(Math.random() * tiles.length);
+
+        tiles[moguraIndex].className = "tile mogura";
+
+        let isRare = Math.random() < 0.1;
+
+        if (isRare) {
+            tiles[moguraIndex].className = "tile rare";
+        } else {
+            tiles[moguraIndex].className = "tile mogura";
+        }
+    }
+
+    function tileClick(e) {
+    let tile = e.currentTarget;
+
+    if (tile.className == "tile mogura") {
+        score++;
+       
+
+        tile.className = "tile hit";
+        moguraIndex = -1;
+
+        playHitSound();
+        updateScore();
+
+        return;
+    }
+ 
+    if (tile.className === "tile rare") {
+            score += 30;
+
+            tile.className = "tile hit";
+            moguraIndex = -1;
+
+            playHitSound();
+            updateScore();
+
+            return;
+        }
+    if (tile.className === "tile hole") {
+            score = Math.max(0, score - 10);
+            updateScore();
+        }
+    
+    
+
+ }
+
+
+ function playHitSound() {
+        hitSound.currentTime = 0;
+
+        let result = hitSound.play();
+
+        if (result !== undefined) {
+            result.catch(function(error) {
+                console.log("効果音を再生できませんでした。", error);
+            });
+        }
+    }
+
+    function updateScore() {
+        updateScoreDisplay();
+
+        let newLevel = Math.floor(score / 50);
+
+        if (newLevel !== speedLevel) {
+            speedLevel = newLevel;
+
+            intervalTime = Math.max(
+                250,
+                1000 - speedLevel * 150
+            );
+
+            clearInterval(timer);
+            timer = setInterval(showMogura, intervalTime);
+        }
+    }
+
+    function updateScoreDisplay() {
+        label.innerText = score + "ポイント";
+    }
+    
+    </script>
+</head>
+
+<body>
+    <h1>モグラ叩き</h1>
+    <div id="field"></div>
+    <p id="label">0ポイント</p>
+    <audio controls src="sound/button51.mp3"></audio>
+</body>
+</html>
+
